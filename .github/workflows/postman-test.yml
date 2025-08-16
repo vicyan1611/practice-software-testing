@@ -3,7 +3,7 @@ name: Run Postman Collection
 on:
   push:
     branches:
-      - main
+      - ci-api-testing
   workflow_dispatch:
 
 jobs:
