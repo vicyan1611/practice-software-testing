@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "postman-test": "newman run collection.json --iteration-data test-data.csv"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.53.1",
-    "@types/node": "^24.0.7"
+    "@types/node": "^24.0.7",
+    "newman": "^6.2.1"
   }
 }
