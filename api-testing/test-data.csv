@@ -1,0 +1,11 @@
+test_case_name,http_method,favorite_id,product_id,expected_statusCode
+Create valid favorite,POST,,1,201
+Create favorite with non-existent product,POST,,9999,422
+Create favorite with invalid product id,POST,,invalid_string,422
+Get all favorites,GET,,,200
+Get existing favorite,GET,{{favoriteId_from_post}},,200
+Get non-existent favorite,GET,9999,,404
+Get favorite with invalid id format,GET,invalid_string,,422
+Delete existing favorite,DELETE,{{favoriteId_from_post}},,204
+Delete non-existent favorite,DELETE,9999,,404
+Delete favorite with invalid id format,DELETE,invalid_string,,422
