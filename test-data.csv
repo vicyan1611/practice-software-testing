@@ -1,11 +1,91 @@
-test_case_name,http_method,favorite_id,product_id,expected_statusCode
-Create valid favorite,POST,,1,201
-Create favorite with non-existent product,POST,,9999,422
-Create favorite with invalid product id,POST,,invalid_string,422
-Get all favorites,GET,,,200
-Get existing favorite,GET,{{favoriteId_from_post}},,200
-Get non-existent favorite,GET,9999,,404
-Get favorite with invalid id format,GET,invalid_string,,422
-Delete existing favorite,DELETE,{{favoriteId_from_post}},,204
-Delete non-existent favorite,DELETE,9999,,404
-Delete favorite with invalid id format,DELETE,invalid_string,,422
+test_case_id,test_case_name,http_method,product_id,favorite_id,expected_statusCode,auth_required,notes
+SF-001,Create favorite with valid product ID,POST,1,,201,true,Valid product exists
+SF-002,Create favorite with another valid ID,POST,2,,201,true,Valid product exists
+SF-003,Create favorite with high-number valid ID,POST,10,,200,true,Valid product exists
+SF-004,Create with string product_id,POST,"abc",,422,true,Invalid data type
+SF-005,Create with empty string,POST,"",,422,true,Empty string validation
+SF-006,Create with null value,POST,null,,422,true,Null validation
+SF-007,Create with boolean value,POST,true,,422,true,Boolean validation
+SF-008,Create with decimal value,POST,101.5,,422,true,Decimal validation
+SF-009,Create with array,POST,[101],,422,true,Array validation
+SF-010,Create with object,POST,"{""id"": 101}",,422,true,Object validation
+SF-011,Create with empty request body,POST,,,422,true,Missing product_id
+SF-012,Create with no request body,POST,,,422,true,No body validation
+SF-013,SQL injection attempt,POST,"1 OR 1=1",,422,true,Security test
+SF-014,Create with non-existent product ID,POST,99999,,404,true,Product not found
+SF-015,Create with different non-existent ID,POST,88888,,404,true,Product not found
+SF-016,Create with extra fields,POST,101,,200,true,Extra fields ignored
+SF-017,Create with product_id 0,POST,0,,404,true,Invalid ID
+SF-018,Create with negative product_id,POST,-1,,422,true,Invalid negative value
+SF-019,Create duplicate favorite,POST,1,,200,true,First creation
+SF-020,Create with very large integer,POST,9223372036854775807,,404,true,Large number handling
+SF-021,Create duplicate favorite,POST,103,,409,true,Duplicate prevention
+SF-022,Create after delete,POST,104,,200,true,Recreation after deletion
+SF-023,Verify GET after create,POST,105,,200,true,State verification
+SF-024,Create without auth token,POST,101,,401,false,No authentication
+SF-025,Create with invalid token,POST,101,,401,invalid,Invalid token
+SF-026,Create with expired token,POST,101,,401,expired,Expired token
+SF-027,Test GET method,GET,,,200,true,Valid endpoint
+SF-028,Test PUT method,PUT,101,,405,true,Method not allowed
+SF-029,Test PATCH method,PATCH,101,,405,true,Method not allowed
+SF-030,Test DELETE method,DELETE,,,405,true,Method not allowed
+RF-001,Get all favorites,GET,,,200,true,Zero favorites
+RF-002,Retrieve single favorite,GET,,,200,true,One favorite
+RF-003,Retrieve multiple favorites,GET,,,200,true,Multiple favorites
+RF-004,Retrieve after adding,GET,,,200,true,After POST operation
+RF-005,Retrieve after deleting,GET,,,200,true,After DELETE operation
+RF-006,Retrieve after deleting all,GET,,,200,true,Empty list
+RF-007,Verify response schema single,GET,,,200,true,Schema validation
+RF-008,Verify response schema multiple,GET,,,200,true,Schema validation
+RF-009,Performance with many favorites,GET,,,200,true,Performance test
+RF-010,Retrieve user-specific favorites,GET,,,200,true,User isolation
+RF-011,Retrieve without auth,GET,,,422,false,No authentication
+RF-012,Retrieve with invalid token,GET,,,422,invalid,Invalid token
+RF-013,Retrieve with expired token,GET,,,422,expired,Expired token
+RF-014,Retrieve with empty bearer,GET,,,422,empty,Empty bearer token
+RF-015,Retrieve with wrong key token,GET,,,422,wrongkey,Wrong signing key
+RF-016,Retrieve for suspended user,GET,,,403,suspended,Suspended account
+RF-017,Token in request body,GET,,,422,true,Wrong token location
+RF-018,Token in query parameter,GET,,,422,true,Wrong token location
+RF-019,Use POST on GET endpoint,POST,,,405,true,Wrong HTTP method
+RF-020,Use PUT on GET endpoint,PUT,,,405,true,Wrong HTTP method
+RF-021,Use DELETE on GET endpoint,DELETE,,,405,true,Wrong HTTP method
+RF-022,Use PATCH on GET endpoint,PATCH,,,405,true,Wrong HTTP method
+RF-023,Verify Content-Type header,GET,,,200,true,Header validation
+RF-024,Invalid Accept header,GET,,,406,true,Accept header test
+RF-025,Extra query parameters,GET,,,200,true,Parameter handling
+RF-026,Case sensitive endpoint,GET,,,404,true,Case sensitivity
+RF-027,Trailing slash endpoint,GET,,,200,true,URL handling
+RF-028,Concurrent requests,GET,,,200,true,Concurrency test
+RF-029,Product deleted from system,GET,,,200,true,Orphaned data
+RF-030,User deleted from system,GET,,,401,false,Orphaned user
+GD-001,Retrieve existing favorite,GET,,123,200,true,Valid favorite ID
+GD-002,Retrieve from list of many,GET,,128,200,true,Multiple favorites exist
+GD-003,Retrieve non-existent favorite,GET,,9999,404,true,Favorite not found
+GD-004,Retrieve another user's favorite,GET,,456,404,true,Access control
+GD-005,Retrieve using string ID,GET,,"abc",422,true,Invalid ID format
+GD-006,Retrieve using decimal ID,GET,,123.5,422,true,Invalid ID format
+GD-007,Retrieve using ID zero,GET,,0,404,true,Invalid ID
+GD-008,Retrieve using negative ID,GET,,-123,404,true,Invalid ID
+GD-009,Retrieve using large number ID,GET,,9223372036854775807,404,true,Large number handling
+GD-010,Retrieve using special char ID,GET,,"@!",400,true,Invalid characters
+GD-011,Retrieve without auth,GET,,123,401,false,No authentication
+GD-012,Retrieve with invalid auth,GET,,123,401,invalid,Invalid token
+GD-013,Retrieve with expired auth,GET,,123,401,expired,Expired token
+GD-014,Delete existing favorite,DELETE,,130,204,true,Valid deletion
+GD-015,Delete first from list,DELETE,,131,204,true,List modification
+GD-016,Delete last from list,DELETE,,133,204,true,List modification
+GD-017,Delete non-existent favorite,DELETE,,9999,404,true,Favorite not found
+GD-018,Delete another user's favorite,DELETE,,789,404,true,Access control
+GD-019,Delete using string ID,DELETE,,"xyz",422,true,Invalid ID format
+GD-020,Delete using decimal ID,DELETE,,130.5,422,true,Invalid ID format
+GD-021,Delete using ID zero,DELETE,,0,404,true,Invalid ID
+GD-022,Delete using negative ID,DELETE,,-130,404,true,Invalid ID
+GD-023,Delete without auth,DELETE,,130,401,false,No authentication
+GD-024,Delete with invalid auth,DELETE,,130,401,invalid,Invalid token
+GD-025,Delete with expired auth,DELETE,,130,401,expired,Expired token
+GD-026,Full lifecycle test,POST,201,,200,true,Create for lifecycle
+GD-027,Retrieve deleted favorite,GET,,141,404,true,After deletion
+GD-028,Delete favorite twice,DELETE,,142,404,true,Idempotency
+GD-029,DELETE idempotency check,DELETE,,143,204,true,First deletion
+GD-030,Retrieve after deleting different,GET,,144,200,true,State isolation

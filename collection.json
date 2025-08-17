@@ -51,6 +51,87 @@
 			"response": []
 		},
 		{
+			"name": "Store new favorite",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Get data from the current row of the CSV file\r",
+							"const expectedCode = pm.iterationData.get(\"expected_statusCode\");\r",
+							"const testName = pm.iterationData.get(\"test_case_name\");\r",
+							"const responseData = pm.response.json();\r",
+							"\r",
+							"\r",
+							"// Handle authentication scenarios\r",
+							"const authRequired = pm.iterationData.get(\"auth_required\");\r",
+							"if (authRequired === \"false\") {\r",
+							"    pm.request.removeHeader(\"Authorization\");\r",
+							"} else if (authRequired === \"invalid\" || authRequired === 'wrongkey') {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer invalidtoken123\"});\r",
+							"} else if (authRequired === \"expired\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer expiredtoken123\"});\r",
+							"} else if (authRequired === \"empty\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer \"});\r",
+							"}\r",
+							"\r",
+							"if (responseData.id) {\r",
+							"    pm.collectionVariables.set(\"favoriteId_from_post\", responseData.id);\r",
+							"}\r",
+							"// Create a dynamic test based on the data\r",
+							"pm.test(testName, function () {\r",
+							"    // Assert that the actual status code matches the expected one from the file\r",
+							"    pm.response.to.have.status(expectedCode);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const requiredMethod = pm.iterationData.get(\"http_method\");\r",
+							"\r",
+							"\r",
+							"if (!requiredMethod.includes(pm.request.method.toUpperCase())) {\r",
+							"    // If the request name doesn't match the method from the CSV,\r",
+							"    // skip it by setting the next request to null.\r",
+							"    pm.execution.skipRequest()\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"product_id\": {{product_id}}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/favorites",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"favorites"
+					]
+				},
+				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+			},
+			"response": []
+		},
+		{
 			"name": "Retrieve all favorites",
 			"event": [
 				{
@@ -78,11 +159,23 @@
 							"const requiredMethod = pm.iterationData.get(\"http_method\");\r",
 							"const testCaseName = pm.iterationData.get(\"test_case_name\");\r",
 							"\r",
-							"if (pm.request.method.toUpperCase() != requiredMethod) {\r",
+							"if (!requiredMethod.includes(pm.request.method.toUpperCase())) {\r",
 							"    // If the request name doesn't match the method from the CSV,\r",
 							"    // skip it by setting the next request to null.\r",
 							"    pm.execution.skipRequest()\r",
 							"}\r",
+							"\r",
+							"const authRequired = pm.iterationData.get(\"auth_required\");\r",
+							"if (authRequired === \"false\") {\r",
+							"    pm.request.removeHeader(\"Authorization\");\r",
+							"} else if (authRequired === \"invalid\" || authRequired === 'wrongkey') {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer invalidtoken123\"});\r",
+							"} else if (authRequired === \"expired\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer expiredtoken123\"});\r",
+							"} else if (authRequired === \"empty\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer \"});\r",
+							"}\r",
+							"\r",
 							"if (testCaseName != \"Get all favorites\") {\r",
 							"    pm.execution.skipRequest()\r",
 							"}"
@@ -143,10 +236,21 @@
 							"const requiredMethod = pm.iterationData.get(\"http_method\");\r",
 							"\r",
 							"\r",
-							"if (pm.request.method.toUpperCase() != requiredMethod) {\r",
+							"if (!requiredMethod.includes(pm.request.method.toUpperCase())) {\r",
 							"    // If the request name doesn't match the method from the CSV,\r",
 							"    // skip it by setting the next request to null.\r",
 							"    pm.execution.skipRequest()\r",
+							"}\r",
+							"\r",
+							"const authRequired = pm.iterationData.get(\"auth_required\");\r",
+							"if (authRequired === \"false\") {\r",
+							"    pm.request.removeHeader(\"Authorization\");\r",
+							"} else if (authRequired === \"invalid\" || authRequired === 'wrongkey') {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer invalidtoken123\"});\r",
+							"} else if (authRequired === \"expired\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer expiredtoken123\"});\r",
+							"} else if (authRequired === \"empty\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer \"});\r",
 							"}"
 						],
 						"type": "text/javascript",
@@ -167,85 +271,16 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_url}}/favorites/{id}",
+					"raw": "{{base_url}}/favorites/{{favorite_id}}",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"favorites",
-						"{id}"
+						"{{favorite_id}}"
 					]
 				},
 				"description": "This is a PUT request and it is used to overwrite an existing piece of data. For instance, after you create an entity with a POST request, you may want to modify that later. You can do that using a PUT request. You typically identify the entity being updated by including an identifier in the URL (eg. `id=1`).\n\nA successful PUT request typically returns a `200 OK`, `201 Created`, or `204 No Content` response code."
-			},
-			"response": []
-		},
-		{
-			"name": "Store new favorite",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"// Get data from the current row of the CSV file\r",
-							"const expectedCode = pm.iterationData.get(\"expected_statusCode\");\r",
-							"const testName = pm.iterationData.get(\"test_case_name\");\r",
-							"const responseData = pm.response.json();\r",
-							"\r",
-							"\r",
-							"if (responseData.id) {\r",
-							"    pm.collectionVariables.set(\"favoriteId_from_post\", responseData.id);\r",
-							"}\r",
-							"// Create a dynamic test based on the data\r",
-							"pm.test(testName, function () {\r",
-							"    // Assert that the actual status code matches the expected one from the file\r",
-							"    pm.response.to.have.status(expectedCode);\r",
-							"});"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"exec": [
-							"const requiredMethod = pm.iterationData.get(\"http_method\");\r",
-							"\r",
-							"\r",
-							"if (pm.request.method.toUpperCase() != requiredMethod) {\r",
-							"    // If the request name doesn't match the method from the CSV,\r",
-							"    // skip it by setting the next request to null.\r",
-							"    pm.execution.skipRequest()\r",
-							"}"
-						],
-						"type": "text/javascript",
-						"packages": {}
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"product_id\": {{product_id}}\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_url}}/favorites",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"favorites"
-					]
-				},
-				"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
 			},
 			"response": []
 		},
@@ -280,10 +315,21 @@
 							"const requiredMethod = pm.iterationData.get(\"http_method\");\r",
 							"\r",
 							"\r",
-							"if (pm.request.method.toUpperCase() != requiredMethod) {\r",
+							"if (!requiredMethod.includes(pm.request.method.toUpperCase())) {\r",
 							"    // If the request name doesn't match the method from the CSV,\r",
 							"    // skip it by setting the next request to null.\r",
 							"    pm.execution.skipRequest()\r",
+							"}\r",
+							"\r",
+							"const authRequired = pm.iterationData.get(\"auth_required\");\r",
+							"if (authRequired === \"false\") {\r",
+							"    pm.request.removeHeader(\"Authorization\");\r",
+							"} else if (authRequired === \"invalid\" || authRequired === 'wrongkey') {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer invalidtoken123\"});\r",
+							"} else if (authRequired === \"expired\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer expiredtoken123\"});\r",
+							"} else if (authRequired === \"empty\") {\r",
+							"    pm.request.headers.add({key: \"Authorization\", value: \"Bearer \"});\r",
 							"}"
 						],
 						"type": "text/javascript",
@@ -360,13 +406,27 @@
 		},
 		{
 			"key": "authToken",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "favoriteId_from_post",
+			"value": ""
+		},
+		{
+			"key": "favorite_id",
 			"value": "",
-			"type": "string"
+			"description": {
+				"content": "",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "product_id",
+			"value": "",
+			"description": {
+				"content": "",
+				"type": "text/plain"
+			}
 		}
 	]
 }
